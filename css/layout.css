@@ -1,0 +1,140 @@
+/* =========================
+   GLOBAL LAYOUT
+========================= */
+
+body {
+    background: var(--bg-main);
+    padding: var(--space-lg);
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+}
+
+.header h1 {
+    font-size: var(--font-xl);
+    font-weight: 600;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.header select {
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: white;
+}
+
+.last-updated {
+    font-size: var(--font-sm);
+    color: var(--text-light);
+}
+
+
+/* =========================
+   KPI SECTION
+========================= */
+
+.kpi-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+
+/* =========================
+   CHART SECTION
+========================= */
+
+.chart-section {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.chart-header {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.chart-header select {
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.chart-container {
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+}
+
+
+/* =========================
+   TABS SECTION
+========================= */
+
+.tabs-section {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.tab {
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: var(--font-md);
+}
+
+.tab.active {
+    background: var(--primary);
+    color: white;
+}
+
+
+/* Search */
+.search-bar {
+    margin-bottom: var(--space-md);
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+
+/* Table */
+.table-container {
+    overflow-x: auto;
+}
