@@ -1,4 +1,4 @@
-// MAIN ENTRY - FULL DATA FLOW
+// MAIN ENTRY - WITH CHART DATA
 
 import { renderKPICards } from "./ui/kpiCards.js";
 import { setupChartSection } from "./ui/chartSection.js";
@@ -11,9 +11,10 @@ import { applyDateFilter } from "./core/filterEngine.js";
 
 import { calculateKPI } from "./engine/kpiEngine.js";
 import { buildCampaignReport, buildDailyReport } from "./engine/aggregationEngine.js";
+import { buildChartData } from "./engine/chartEngine.js";
 
 
-// Normalize columns
+// Normalize
 function normalizeRow(row) {
     return {
         Date: row["Date"],
@@ -29,29 +30,24 @@ function normalizeRow(row) {
 
 async function init() {
 
-    // Load data
     const { daily, placement } = await loadAllData();
 
     const normalized = daily.map(normalizeRow);
 
-    // Default filter
     const filtered = applyDateFilter(normalized, "current");
 
     // KPI
     const kpi = calculateKPI(filtered);
     renderKPICards(kpi);
 
-    // Chart UI
-    setupChartSection();
-
     // Reports
     const campaignData = buildCampaignReport(filtered);
     const dailyData = buildDailyReport(filtered);
 
-    // Placement (no filter logic yet)
-    const placementData = placement;
+    // Chart data
+    const chartData = buildChartData(dailyData);
+    setupChartSection(chartData);
 
-    // 🔥 DATA STORE (IMPORTANT)
     const dataStore = {
         render: (type) => {
 
@@ -64,23 +60,15 @@ async function init() {
             }
 
             if (type === "placement") {
-                if (!placementData || placementData.length === 0) {
-                    renderTable("placement", []);
-                } else {
-                    renderTable("placement", placementData);
-                }
+                renderTable("placement", placement);
             }
 
         }
     };
 
-    // Default table
     dataStore.render("campaign");
 
-    // Tabs connected
     setupTabs(dataStore);
-
-    // Search UI
     setupSearch();
 
 }
