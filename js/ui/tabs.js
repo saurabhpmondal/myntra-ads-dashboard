@@ -1,6 +1,6 @@
-// TABS HANDLER (UI ONLY)
+// TABS HANDLER (CONNECTED WITH DATA)
 
-export function setupTabs() {
+export function setupTabs(dataStore) {
 
     const tabs = document.querySelectorAll(".tab");
     const searchBar = document.getElementById("searchBar");
@@ -9,22 +9,31 @@ export function setupTabs() {
 
         tab.addEventListener("click", () => {
 
-            // Remove active from all
+            // Active state
             tabs.forEach(t => t.classList.remove("active"));
-
-            // Add active to clicked
             tab.classList.add("active");
 
             const selectedTab = tab.dataset.tab;
 
-            // Show search only for Campaign tab
+            // Search visibility
             if (selectedTab === "campaign") {
                 searchBar.style.display = "block";
             } else {
                 searchBar.style.display = "none";
             }
 
-            // NOTE: Table switching logic will come later (data phase)
+            // Render correct table
+            if (selectedTab === "campaign") {
+                dataStore.render("campaign");
+            }
+
+            if (selectedTab === "daily") {
+                dataStore.render("daily");
+            }
+
+            if (selectedTab === "placement") {
+                dataStore.render("placement");
+            }
 
         });
 
