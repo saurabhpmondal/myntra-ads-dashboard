@@ -1,11 +1,33 @@
-// TABLE RENDERER (UI ONLY - DUMMY DATA)
+// TABLE RENDERER (DYNAMIC DATA)
 
-export function renderTable(type = "campaign") {
+function formatNumber(num) {
+    return Number(num || 0).toLocaleString("en-IN");
+}
+
+function formatCurrency(num) {
+    return "₹" + formatNumber(num);
+}
+
+function formatPercent(num) {
+    return (num || 0).toFixed(2) + "%";
+}
+
+
+// MAIN RENDER FUNCTION
+export function renderTable(type = "campaign", data = []) {
 
     const container = document.getElementById("tableContainer");
 
+    if (!data || data.length === 0) {
+        container.innerHTML = "<p>No data available</p>";
+        return;
+    }
+
     let tableHTML = "";
 
+    // ========================
+    // CAMPAIGN TABLE
+    // ========================
     if (type === "campaign") {
 
         tableHTML = `
@@ -13,26 +35,34 @@ export function renderTable(type = "campaign") {
                 <thead>
                     <tr>
                         <th>Campaign</th>
-                        <th>Status</th>
-                        <th>Budget</th>
-                        <th>Spend</th>
                         <th>Impressions</th>
+                        <th>Clicks</th>
+                        <th>Spend</th>
+                        <th>Revenue</th>
+                        <th>CTR</th>
+                        <th>ROI</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Campaign A</td>
-                        <td><span class="badge success">Active</span></td>
-                        <td>₹20,000</td>
-                        <td>₹10,000</td>
-                        <td>200,000</td>
-                    </tr>
+                    ${data.map(row => `
+                        <tr>
+                            <td>${row.campaign}</td>
+                            <td>${formatNumber(row.impressions)}</td>
+                            <td>${formatNumber(row.clicks)}</td>
+                            <td>${formatCurrency(row.spend)}</td>
+                            <td>${formatCurrency(row.revenue)}</td>
+                            <td>${formatPercent(row.ctr)}</td>
+                            <td>${row.roi.toFixed(2)}</td>
+                        </tr>
+                    `).join("")}
                 </tbody>
             </table>
         `;
-
     }
 
+    // ========================
+    // DAILY TABLE
+    // ========================
     if (type === "daily") {
 
         tableHTML = `
@@ -40,26 +70,34 @@ export function renderTable(type = "campaign") {
                 <thead>
                     <tr>
                         <th>Date</th>
+                        <th>Impressions</th>
+                        <th>Clicks</th>
                         <th>Spend</th>
                         <th>Revenue</th>
-                        <th>Clicks</th>
-                        <th>Impressions</th>
+                        <th>CTR</th>
+                        <th>ROI</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>23 Mar</td>
-                        <td>₹5,000</td>
-                        <td>₹20,000</td>
-                        <td>1,200</td>
-                        <td>50,000</td>
-                    </tr>
+                    ${data.map(row => `
+                        <tr>
+                            <td>${row.date}</td>
+                            <td>${formatNumber(row.impressions)}</td>
+                            <td>${formatNumber(row.clicks)}</td>
+                            <td>${formatCurrency(row.spend)}</td>
+                            <td>${formatCurrency(row.revenue)}</td>
+                            <td>${formatPercent(row.ctr)}</td>
+                            <td>${row.roi.toFixed(2)}</td>
+                        </tr>
+                    `).join("")}
                 </tbody>
             </table>
         `;
-
     }
 
+    // ========================
+    // PLACEMENT TABLE
+    // ========================
     if (type === "placement") {
 
         tableHTML = `
@@ -67,24 +105,29 @@ export function renderTable(type = "campaign") {
                 <thead>
                     <tr>
                         <th>Placement</th>
+                        <th>Impressions</th>
+                        <th>Clicks</th>
                         <th>Spend</th>
                         <th>Revenue</th>
-                        <th>Clicks</th>
-                        <th>Impressions</th>
+                        <th>CTR</th>
+                        <th>ROI</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Search</td>
-                        <td>₹15,000</td>
-                        <td>₹60,000</td>
-                        <td>3,500</td>
-                        <td>120,000</td>
-                    </tr>
+                    ${data.map(row => `
+                        <tr>
+                            <td>${row.placement}</td>
+                            <td>${formatNumber(row.impressions)}</td>
+                            <td>${formatNumber(row.clicks)}</td>
+                            <td>${formatCurrency(row.spend)}</td>
+                            <td>${formatCurrency(row.revenue)}</td>
+                            <td>${formatPercent(row.ctr)}</td>
+                            <td>${row.roi.toFixed(2)}</td>
+                        </tr>
+                    `).join("")}
                 </tbody>
             </table>
         `;
-
     }
 
     container.innerHTML = tableHTML;
