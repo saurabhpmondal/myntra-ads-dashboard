@@ -1,4 +1,4 @@
-// MAIN ENTRY - CONNECT DATA + UI
+// MAIN ENTRY - FULL DATA FLOW
 
 import { renderKPICards } from "./ui/kpiCards.js";
 import { setupChartSection } from "./ui/chartSection.js";
@@ -13,7 +13,7 @@ import { calculateKPI } from "./engine/kpiEngine.js";
 import { buildCampaignReport, buildDailyReport } from "./engine/aggregationEngine.js";
 
 
-// 🔹 Normalize column names (VERY IMPORTANT)
+// Normalize columns
 function normalizeRow(row) {
     return {
         Date: row["Date"],
@@ -30,34 +30,57 @@ function normalizeRow(row) {
 async function init() {
 
     // Load data
-    const { daily } = await loadAllData();
+    const { daily, placement } = await loadAllData();
 
-    // Normalize
     const normalized = daily.map(normalizeRow);
 
-    // Apply filter (default: current month)
+    // Default filter
     const filtered = applyDateFilter(normalized, "current");
 
     // KPI
     const kpi = calculateKPI(filtered);
-
-    // Render KPI
     renderKPICards(kpi);
 
-    // Chart setup
+    // Chart UI
     setupChartSection();
 
     // Reports
     const campaignData = buildCampaignReport(filtered);
     const dailyData = buildDailyReport(filtered);
 
+    // Placement (no filter logic yet)
+    const placementData = placement;
+
+    // 🔥 DATA STORE (IMPORTANT)
+    const dataStore = {
+        render: (type) => {
+
+            if (type === "campaign") {
+                renderTable("campaign", campaignData);
+            }
+
+            if (type === "daily") {
+                renderTable("daily", dailyData);
+            }
+
+            if (type === "placement") {
+                if (!placementData || placementData.length === 0) {
+                    renderTable("placement", []);
+                } else {
+                    renderTable("placement", placementData);
+                }
+            }
+
+        }
+    };
+
     // Default table
-    renderTable("campaign", campaignData);
+    dataStore.render("campaign");
 
-    // Tabs
-    setupTabs();
+    // Tabs connected
+    setupTabs(dataStore);
 
-    // Search
+    // Search UI
     setupSearch();
 
 }
