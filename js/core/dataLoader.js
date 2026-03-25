@@ -1,11 +1,28 @@
-// DATA LOADER - ROBUST CSV PARSER
+// DATA LOADER - FIXED FOR GITHUB PAGES
 
-export async function loadCSV(path) {
+function getBasePath() {
+    // Example:
+    // https://abhpmondal.github.io/myntra-ads-dashboard/
+    const path = window.location.pathname.split("/");
+    
+    // repo name is first folder
+    const repoName = path[1];
+
+    return "/" + repoName;
+}
+
+
+export async function loadCSV(fileName) {
+
     try {
-        const response = await fetch(path);
+
+        const base = getBasePath();
+        const url = `${base}/data/${fileName}`;
+
+        const response = await fetch(url);
 
         if (!response.ok) {
-            console.error("File not found:", path);
+            alert("File not found: " + url);
             return [];
         }
 
@@ -14,13 +31,13 @@ export async function loadCSV(path) {
         return parseCSV(text);
 
     } catch (error) {
-        console.error("CSV Load Error:", error);
+        alert("CSV Load Error");
         return [];
     }
 }
 
 
-// ✅ BETTER CSV PARSER (HANDLES QUOTES)
+// ROBUST CSV PARSER
 function parseCSV(text) {
 
     const rows = text.trim().split("\n");
@@ -33,21 +50,12 @@ function parseCSV(text) {
 
     for (let i = 1; i < rows.length; i++) {
 
-        const row = rows[i];
-
-        // Handle quoted values
-        const values = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
-
-        if (!values) continue;
+        const values = rows[i].split(",");
 
         const obj = {};
 
         headers.forEach((header, index) => {
-            let value = values[index] || "";
-
-            value = value.replace(/^"|"$/g, "").trim();
-
-            obj[header] = value;
+            obj[header] = (values[index] || "").trim();
         });
 
         data.push(obj);
@@ -57,15 +65,14 @@ function parseCSV(text) {
 }
 
 
-// LOAD ALL FILES
+// LOAD ALL DATA
 export async function loadAllData() {
 
-    const daily = await loadCSV("./data/daily.csv");
-    const placement = await loadCSV("./data/placement.csv");
-    const product = await loadCSV("./data/product.csv");
+    const daily = await loadCSV("daily.csv");
+    const placement = await loadCSV("placement.csv");
+    const product = await loadCSV("product.csv");
 
-    console.log("Daily Rows:", daily.length);
-    console.log("Placement Rows:", placement.length);
+    alert("Daily rows: " + daily.length); // MOBILE DEBUG
 
     return {
         daily,
