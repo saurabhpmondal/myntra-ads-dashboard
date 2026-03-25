@@ -1,34 +1,53 @@
-// DATA LOADER - CSV FETCH & PARSE
+// DATA LOADER - ROBUST CSV PARSER
 
 export async function loadCSV(path) {
     try {
         const response = await fetch(path);
+
+        if (!response.ok) {
+            console.error("File not found:", path);
+            return [];
+        }
+
         const text = await response.text();
 
         return parseCSV(text);
 
     } catch (error) {
-        console.error("Error loading CSV:", path, error);
+        console.error("CSV Load Error:", error);
         return [];
     }
 }
 
 
-// SIMPLE CSV PARSER
+// ✅ BETTER CSV PARSER (HANDLES QUOTES)
 function parseCSV(text) {
 
     const rows = text.trim().split("\n");
-    const headers = rows[0].split(",");
+
+    if (rows.length < 2) return [];
+
+    const headers = rows[0].split(",").map(h => h.trim());
 
     const data = [];
 
     for (let i = 1; i < rows.length; i++) {
 
-        const values = rows[i].split(",");
+        const row = rows[i];
+
+        // Handle quoted values
+        const values = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+
+        if (!values) continue;
+
         const obj = {};
 
         headers.forEach((header, index) => {
-            obj[header.trim()] = values[index]?.trim();
+            let value = values[index] || "";
+
+            value = value.replace(/^"|"$/g, "").trim();
+
+            obj[header] = value;
         });
 
         data.push(obj);
@@ -38,12 +57,15 @@ function parseCSV(text) {
 }
 
 
-// LOAD ALL DATA FILES
+// LOAD ALL FILES
 export async function loadAllData() {
 
-    const daily = await loadCSV("data/daily.csv");
-    const placement = await loadCSV("data/placement.csv");
-    const product = await loadCSV("data/product.csv");
+    const daily = await loadCSV("./data/daily.csv");
+    const placement = await loadCSV("./data/placement.csv");
+    const product = await loadCSV("./data/product.csv");
+
+    console.log("Daily Rows:", daily.length);
+    console.log("Placement Rows:", placement.length);
 
     return {
         daily,
