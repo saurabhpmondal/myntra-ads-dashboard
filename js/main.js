@@ -1,4 +1,4 @@
-// MAIN ENTRY - WITH CHART DATA
+// MAIN ENTRY - FULLY DYNAMIC DASHBOARD
 
 import { renderKPICards } from "./ui/kpiCards.js";
 import { setupChartSection } from "./ui/chartSection.js";
@@ -14,27 +14,50 @@ import { buildCampaignReport, buildDailyReport } from "./engine/aggregationEngin
 import { buildChartData } from "./engine/chartEngine.js";
 
 
-// Normalize
+// Normalize columns
 function normalizeRow(row) {
     return {
         Date: row["Date"],
         "Campaign Name": row["Campaign Name"],
-        Impressions: row["Impressions"],
-        Clicks: row["Clicks"],
-        Spend: row["Spend"],
-        Revenue: row["Revenue"] || row["Total Revenue (Rs.)"],
-        "Units Sold": row["Units Sold"] || row["Total Units"]
+        Impressions: Number(row["Impressions"] || 0),
+        Clicks: Number(row["Clicks"] || 0),
+        Spend: Number(row["Spend"] || 0),
+        Revenue: Number(row["Revenue"] || row["Total Revenue (Rs.)"] || 0),
+        "Units Sold": Number(row["Units Sold"] || row["Total Units"] || 0)
     };
 }
 
 
+// GLOBAL STATE
+let rawDaily = [];
+let rawPlacement = [];
+let currentFilter = "current";
+
+
+// MAIN INIT
 async function init() {
 
     const { daily, placement } = await loadAllData();
 
-    const normalized = daily.map(normalizeRow);
+    rawDaily = daily.map(normalizeRow);
+    rawPlacement = placement;
 
-    const filtered = applyDateFilter(normalized, "current");
+    setupChartSection([]); // init empty
+    setupSearch();
+
+    setupDateFilter();
+
+    // First render
+    updateDashboard();
+
+}
+
+
+// CORE UPDATE FUNCTION (VERY IMPORTANT)
+function updateDashboard() {
+
+    // Apply filter
+    const filtered = applyDateFilter(rawDaily, currentFilter);
 
     // KPI
     const kpi = calculateKPI(filtered);
@@ -44,10 +67,11 @@ async function init() {
     const campaignData = buildCampaignReport(filtered);
     const dailyData = buildDailyReport(filtered);
 
-    // Chart data
+    // Chart
     const chartData = buildChartData(dailyData);
     setupChartSection(chartData);
 
+    // Data Store
     const dataStore = {
         render: (type) => {
 
@@ -60,17 +84,41 @@ async function init() {
             }
 
             if (type === "placement") {
-                renderTable("placement", placement);
-            }
 
+                // Placement only works for month filters
+                if (currentFilter === "current" || currentFilter === "lastMonth") {
+                    renderTable("placement", rawPlacement);
+                } else {
+                    renderTable("placement", []);
+                }
+            }
         }
     };
 
+    // Default
     dataStore.render("campaign");
 
+    // Tabs
     setupTabs(dataStore);
-    setupSearch();
 
 }
 
+
+// DATE FILTER HANDLER
+function setupDateFilter() {
+
+    const filter = document.getElementById("dateFilter");
+
+    filter.addEventListener("change", (e) => {
+
+        currentFilter = e.target.value;
+
+        updateDashboard();
+
+    });
+
+}
+
+
+// START
 init();
