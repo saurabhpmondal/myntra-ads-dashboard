@@ -1,10 +1,10 @@
-// MAIN ENTRY - FULLY DYNAMIC DASHBOARD
+// MAIN ENTRY - FULLY DYNAMIC WITH SEARCH
 
 import { renderKPICards } from "./ui/kpiCards.js";
 import { setupChartSection } from "./ui/chartSection.js";
 import { setupTabs } from "./ui/tabs.js";
 import { renderTable } from "./ui/table.js";
-import { setupSearch } from "./ui/search.js";
+import { setupSearch, setSearchData } from "./ui/search.js";
 
 import { loadAllData } from "./core/dataLoader.js";
 import { applyDateFilter } from "./core/filterEngine.js";
@@ -14,7 +14,7 @@ import { buildCampaignReport, buildDailyReport } from "./engine/aggregationEngin
 import { buildChartData } from "./engine/chartEngine.js";
 
 
-// Normalize columns
+// Normalize
 function normalizeRow(row) {
     return {
         Date: row["Date"],
@@ -23,7 +23,8 @@ function normalizeRow(row) {
         Clicks: Number(row["Clicks"] || 0),
         Spend: Number(row["Spend"] || 0),
         Revenue: Number(row["Revenue"] || row["Total Revenue (Rs.)"] || 0),
-        "Units Sold": Number(row["Units Sold"] || row["Total Units"] || 0)
+        "Units Sold": Number(row["Units Sold"] || row["Total Units"] || 0),
+        campaign_id: row["Campaign ID"] || ""
     };
 }
 
@@ -33,8 +34,11 @@ let rawDaily = [];
 let rawPlacement = [];
 let currentFilter = "current";
 
+let campaignData = [];
+let dailyData = [];
 
-// MAIN INIT
+
+// INIT
 async function init() {
 
     const { daily, placement } = await loadAllData();
@@ -42,21 +46,17 @@ async function init() {
     rawDaily = daily.map(normalizeRow);
     rawPlacement = placement;
 
-    setupChartSection([]); // init empty
-    setupSearch();
-
+    setupChartSection([]);
     setupDateFilter();
 
-    // First render
     updateDashboard();
 
 }
 
 
-// CORE UPDATE FUNCTION (VERY IMPORTANT)
+// MAIN UPDATE FUNCTION
 function updateDashboard() {
 
-    // Apply filter
     const filtered = applyDateFilter(rawDaily, currentFilter);
 
     // KPI
@@ -64,19 +64,27 @@ function updateDashboard() {
     renderKPICards(kpi);
 
     // Reports
-    const campaignData = buildCampaignReport(filtered);
-    const dailyData = buildDailyReport(filtered);
+    campaignData = buildCampaignReport(filtered);
+    dailyData = buildDailyReport(filtered);
+
+    // Provide search data
+    setSearchData(campaignData);
 
     // Chart
     const chartData = buildChartData(dailyData);
     setupChartSection(chartData);
 
-    // Data Store
+    // DATA STORE
     const dataStore = {
         render: (type) => {
 
             if (type === "campaign") {
                 renderTable("campaign", campaignData);
+
+                // Attach search
+                setupSearch((filteredData) => {
+                    renderTable("campaign", filteredData);
+                });
             }
 
             if (type === "daily") {
@@ -85,7 +93,6 @@ function updateDashboard() {
 
             if (type === "placement") {
 
-                // Placement only works for month filters
                 if (currentFilter === "current" || currentFilter === "lastMonth") {
                     renderTable("placement", rawPlacement);
                 } else {
@@ -95,16 +102,13 @@ function updateDashboard() {
         }
     };
 
-    // Default
     dataStore.render("campaign");
-
-    // Tabs
     setupTabs(dataStore);
 
 }
 
 
-// DATE FILTER HANDLER
+// DATE FILTER
 function setupDateFilter() {
 
     const filter = document.getElementById("dateFilter");
@@ -112,7 +116,6 @@ function setupDateFilter() {
     filter.addEventListener("change", (e) => {
 
         currentFilter = e.target.value;
-
         updateDashboard();
 
     });
