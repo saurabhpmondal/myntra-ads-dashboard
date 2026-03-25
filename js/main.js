@@ -1,4 +1,4 @@
-// MAIN ENTRY - FULLY DYNAMIC WITH SEARCH
+// MAIN ENTRY - FIXED COLUMN MAPPING
 
 import { renderKPICards } from "./ui/kpiCards.js";
 import { setupChartSection } from "./ui/chartSection.js";
@@ -14,17 +14,45 @@ import { buildCampaignReport, buildDailyReport } from "./engine/aggregationEngin
 import { buildChartData } from "./engine/chartEngine.js";
 
 
-// Normalize
+// ✅ REAL NORMALIZATION (Myntra Format)
 function normalizeRow(row) {
+
     return {
         Date: row["Date"],
-        "Campaign Name": row["Campaign Name"],
-        Impressions: Number(row["Impressions"] || 0),
-        Clicks: Number(row["Clicks"] || 0),
-        Spend: Number(row["Spend"] || 0),
-        Revenue: Number(row["Revenue"] || row["Total Revenue (Rs.)"] || 0),
-        "Units Sold": Number(row["Units Sold"] || row["Total Units"] || 0),
-        campaign_id: row["Campaign ID"] || ""
+
+        "Campaign Name":
+            row["Campaign Name"] ||
+            row["campaign_name"] ||
+            "",
+
+        Impressions:
+            Number(row["Impressions"] ||
+            row["Views"] ||
+            0),
+
+        Clicks:
+            Number(row["Clicks"] || 0),
+
+        Spend:
+            Number(row["Spend"] ||
+            row["Total Spends"] ||
+            row["Ad Spend"] ||
+            0),
+
+        Revenue:
+            Number(row["Revenue"] ||
+            row["Total Revenue (Rs.)"] ||
+            0),
+
+        "Units Sold":
+            Number(row["Units Sold"] ||
+            row["Total Units"] ||
+            0),
+
+        campaign_id:
+            row["Campaign ID"] ||
+            row["campaign_id"] ||
+            ""
     };
 }
 
@@ -50,11 +78,10 @@ async function init() {
     setupDateFilter();
 
     updateDashboard();
-
 }
 
 
-// MAIN UPDATE FUNCTION
+// UPDATE DASHBOARD
 function updateDashboard() {
 
     const filtered = applyDateFilter(rawDaily, currentFilter);
@@ -63,14 +90,13 @@ function updateDashboard() {
     const kpi = calculateKPI(filtered);
     renderKPICards(kpi);
 
-    // Reports
+    // REPORTS
     campaignData = buildCampaignReport(filtered);
     dailyData = buildDailyReport(filtered);
 
-    // Provide search data
     setSearchData(campaignData);
 
-    // Chart
+    // CHART
     const chartData = buildChartData(dailyData);
     setupChartSection(chartData);
 
@@ -81,7 +107,6 @@ function updateDashboard() {
             if (type === "campaign") {
                 renderTable("campaign", campaignData);
 
-                // Attach search
                 setupSearch((filteredData) => {
                     renderTable("campaign", filteredData);
                 });
@@ -104,7 +129,6 @@ function updateDashboard() {
 
     dataStore.render("campaign");
     setupTabs(dataStore);
-
 }
 
 
@@ -114,12 +138,9 @@ function setupDateFilter() {
     const filter = document.getElementById("dateFilter");
 
     filter.addEventListener("change", (e) => {
-
         currentFilter = e.target.value;
         updateDashboard();
-
     });
-
 }
 
 
