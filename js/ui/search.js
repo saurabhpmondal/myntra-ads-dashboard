@@ -1,18 +1,37 @@
-// SEARCH HANDLER (UI ONLY - PREP FOR FUTURE LOGIC)
+// SEARCH HANDLER - FULLY FUNCTIONAL
 
-export function setupSearch() {
+let originalCampaignData = [];
+
+
+// Store original data
+export function setSearchData(data) {
+    originalCampaignData = data || [];
+}
+
+
+// Setup search input
+export function setupSearch(onSearch) {
 
     const input = document.querySelector(".search-bar input");
 
     input.addEventListener("input", () => {
 
-        const value = input.value.toLowerCase();
+        const value = input.value.toLowerCase().trim();
 
-        // NOTE:
-        // Actual filtering logic will be added later
-        // when we connect real data
+        if (!value) {
+            onSearch(originalCampaignData);
+            return;
+        }
 
-        console.log("Search:", value);
+        const filtered = originalCampaignData.filter(row => {
+
+            const name = (row.campaign || "").toLowerCase();
+            const id = (row.campaign_id || "").toLowerCase();
+
+            return name.includes(value) || id.includes(value);
+        });
+
+        onSearch(filtered);
 
     });
 
