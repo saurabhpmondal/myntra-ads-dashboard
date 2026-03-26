@@ -1,4 +1,4 @@
-// MAIN ENTRY - FINAL FIX (ROBUST NORMALIZATION)
+// MAIN ENTRY - FINAL FIX (NUMBERS + DATE FIXED)
 
 import { renderKPICards } from "./ui/kpiCards.js";
 import { setupChartSection } from "./ui/chartSection.js";
@@ -14,10 +14,22 @@ import { buildCampaignReport, buildDailyReport } from "./engine/aggregationEngin
 import { buildChartData } from "./engine/chartEngine.js";
 
 
-// 🔥 SMART NORMALIZATION (AUTO DETECT HEADERS)
-function normalizeRow(row) {
+// 🔥 CLEAN NUMBER FUNCTION
+function cleanNumber(value) {
+    if (!value) return 0;
 
-    const keys = Object.keys(row);
+    return Number(
+        value
+            .toString()
+            .replace(/₹/g, "")
+            .replace(/,/g, "")
+            .trim()
+    ) || 0;
+}
+
+
+// 🔥 NORMALIZATION (FINAL)
+function normalizeRow(row) {
 
     const get = (...names) => {
         for (let n of names) {
@@ -30,31 +42,25 @@ function normalizeRow(row) {
         Date: get("Date", "date"),
 
         "Campaign Name":
-            get("Campaign Name", "campaign_name", "Campaign"),
+            get("Campaign Name", "campaign_name", "Campaign") || "Unknown",
 
         Impressions:
-            Number(get("Impressions", "Views", "views", "impressions") || 0),
+            cleanNumber(get("Impressions", "Views", "views")),
 
         Clicks:
-            Number(get("Clicks", "clicks") || 0),
+            cleanNumber(get("Clicks")),
 
         Spend:
-            Number(
-                get("Spend", "Ad Spend", "Total Spends", "cost") || 0
-            ),
+            cleanNumber(get("Spend", "Ad Spend", "Total Spends")),
 
         Revenue:
-            Number(
-                get("Revenue", "Total Revenue (Rs.)", "Revenue (Rs.)") || 0
-            ),
+            cleanNumber(get("Revenue", "Total Revenue (Rs.)")),
 
         "Units Sold":
-            Number(
-                get("Units Sold", "Total Units", "Units") || 0
-            ),
+            cleanNumber(get("Units Sold", "Total Units")),
 
         campaign_id:
-            get("Campaign ID", "campaign_id")
+            get("Campaign ID", "campaign_id") || ""
     };
 }
 
@@ -74,9 +80,6 @@ async function init() {
 
     const { daily, placement } = await loadAllData();
 
-    // 🔥 DEBUG SAMPLE
-    alert("Sample Row: " + JSON.stringify(daily[0]));
-
     rawDaily = daily.map(normalizeRow);
     rawPlacement = placement;
 
@@ -87,7 +90,7 @@ async function init() {
 }
 
 
-// UPDATE
+// UPDATE DASHBOARD
 function updateDashboard() {
 
     const filtered = applyDateFilter(rawDaily, currentFilter);
