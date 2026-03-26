@@ -1,4 +1,4 @@
-// MAIN ENTRY - FINAL STABLE VERSION
+// MAIN ENTRY - FINAL FIX (ROBUST NORMALIZATION)
 
 import { renderKPICards } from "./ui/kpiCards.js";
 import { setupChartSection } from "./ui/chartSection.js";
@@ -14,48 +14,47 @@ import { buildCampaignReport, buildDailyReport } from "./engine/aggregationEngin
 import { buildChartData } from "./engine/chartEngine.js";
 
 
-// NORMALIZATION (Myntra compatible)
+// 🔥 SMART NORMALIZATION (AUTO DETECT HEADERS)
 function normalizeRow(row) {
+
+    const keys = Object.keys(row);
+
+    const get = (...names) => {
+        for (let n of names) {
+            if (row[n] !== undefined) return row[n];
+        }
+        return "";
+    };
+
     return {
-        Date: row["Date"],
+        Date: get("Date", "date"),
 
         "Campaign Name":
-            row["Campaign Name"] ||
-            row["campaign_name"] ||
-            "",
+            get("Campaign Name", "campaign_name", "Campaign"),
 
         Impressions:
-            Number(row["Impressions"] || row["Views"] || 0),
+            Number(get("Impressions", "Views", "views", "impressions") || 0),
 
         Clicks:
-            Number(row["Clicks"] || 0),
+            Number(get("Clicks", "clicks") || 0),
 
         Spend:
             Number(
-                row["Spend"] ||
-                row["Total Spends"] ||
-                row["Ad Spend"] ||
-                0
+                get("Spend", "Ad Spend", "Total Spends", "cost") || 0
             ),
 
         Revenue:
             Number(
-                row["Revenue"] ||
-                row["Total Revenue (Rs.)"] ||
-                0
+                get("Revenue", "Total Revenue (Rs.)", "Revenue (Rs.)") || 0
             ),
 
         "Units Sold":
             Number(
-                row["Units Sold"] ||
-                row["Total Units"] ||
-                0
+                get("Units Sold", "Total Units", "Units") || 0
             ),
 
         campaign_id:
-            row["Campaign ID"] ||
-            row["campaign_id"] ||
-            ""
+            get("Campaign ID", "campaign_id")
     };
 }
 
@@ -75,6 +74,9 @@ async function init() {
 
     const { daily, placement } = await loadAllData();
 
+    // 🔥 DEBUG SAMPLE
+    alert("Sample Row: " + JSON.stringify(daily[0]));
+
     rawDaily = daily.map(normalizeRow);
     rawPlacement = placement;
 
@@ -85,26 +87,22 @@ async function init() {
 }
 
 
-// CORE UPDATE
+// UPDATE
 function updateDashboard() {
 
     const filtered = applyDateFilter(rawDaily, currentFilter);
 
-    // KPI
     const kpi = calculateKPI(filtered);
     renderKPICards(kpi);
 
-    // REPORTS
     campaignData = buildCampaignReport(filtered);
     dailyData = buildDailyReport(filtered);
 
     setSearchData(campaignData);
 
-    // CHART
     const chartData = buildChartData(dailyData);
     setupChartSection(chartData);
 
-    // DATA STORE
     const dataStore = {
         render: (type) => {
 
