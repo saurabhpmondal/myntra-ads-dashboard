@@ -21,27 +21,27 @@
 
         <div class="header-right">
             <select id="dateFilter">
+                <option value="all">All Data</option>
                 <option value="current">Current Month</option>
                 <option value="lastMonth">Last Month</option>
                 <option value="last7days">Last 7 Days</option>
-                <option value="custom">Custom</option>
             </select>
 
             <span class="last-updated">Last Updated: --</span>
         </div>
     </header>
 
-    <!-- KPI CARDS -->
+    <!-- KPI -->
     <section class="kpi-section" id="kpiContainer"></section>
 
-    <!-- CHART SECTION -->
+    <!-- CHART -->
     <section class="chart-section">
         <div class="chart-header">
             <select id="metric1"></select>
             <select id="metric2"></select>
         </div>
 
-        <div class="chart-container">
+        <div class="chart-container" style="height:300px;">
             <canvas id="chartCanvas"></canvas>
         </div>
     </section>
@@ -55,7 +55,7 @@
             <button class="tab" data-tab="placement">Placement</button>
         </div>
 
-        <!-- SEARCH (ONLY CAMPAIGN) -->
+        <!-- SEARCH -->
         <div class="search-bar" id="searchBar">
             <input type="text" placeholder="Search Campaign Name / ID">
         </div>
@@ -65,7 +65,7 @@
 
     </section>
 
-    <!-- Chart.js CDN -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- JS -->
