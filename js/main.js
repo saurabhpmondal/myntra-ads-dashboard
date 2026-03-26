@@ -1,4 +1,4 @@
-// MAIN ENTRY - FIXED COLUMN MAPPING
+// MAIN ENTRY - FINAL STABLE VERSION
 
 import { renderKPICards } from "./ui/kpiCards.js";
 import { setupChartSection } from "./ui/chartSection.js";
@@ -14,9 +14,8 @@ import { buildCampaignReport, buildDailyReport } from "./engine/aggregationEngin
 import { buildChartData } from "./engine/chartEngine.js";
 
 
-// ✅ REAL NORMALIZATION (Myntra Format)
+// NORMALIZATION (Myntra compatible)
 function normalizeRow(row) {
-
     return {
         Date: row["Date"],
 
@@ -26,28 +25,32 @@ function normalizeRow(row) {
             "",
 
         Impressions:
-            Number(row["Impressions"] ||
-            row["Views"] ||
-            0),
+            Number(row["Impressions"] || row["Views"] || 0),
 
         Clicks:
             Number(row["Clicks"] || 0),
 
         Spend:
-            Number(row["Spend"] ||
-            row["Total Spends"] ||
-            row["Ad Spend"] ||
-            0),
+            Number(
+                row["Spend"] ||
+                row["Total Spends"] ||
+                row["Ad Spend"] ||
+                0
+            ),
 
         Revenue:
-            Number(row["Revenue"] ||
-            row["Total Revenue (Rs.)"] ||
-            0),
+            Number(
+                row["Revenue"] ||
+                row["Total Revenue (Rs.)"] ||
+                0
+            ),
 
         "Units Sold":
-            Number(row["Units Sold"] ||
-            row["Total Units"] ||
-            0),
+            Number(
+                row["Units Sold"] ||
+                row["Total Units"] ||
+                0
+            ),
 
         campaign_id:
             row["Campaign ID"] ||
@@ -60,7 +63,8 @@ function normalizeRow(row) {
 // GLOBAL STATE
 let rawDaily = [];
 let rawPlacement = [];
-let currentFilter = "current";
+
+let currentFilter = "all";
 
 let campaignData = [];
 let dailyData = [];
@@ -81,7 +85,7 @@ async function init() {
 }
 
 
-// UPDATE DASHBOARD
+// CORE UPDATE
 function updateDashboard() {
 
     const filtered = applyDateFilter(rawDaily, currentFilter);
@@ -118,7 +122,7 @@ function updateDashboard() {
 
             if (type === "placement") {
 
-                if (currentFilter === "current" || currentFilter === "lastMonth") {
+                if (currentFilter === "current" || currentFilter === "lastMonth" || currentFilter === "all") {
                     renderTable("placement", rawPlacement);
                 } else {
                     renderTable("placement", []);
