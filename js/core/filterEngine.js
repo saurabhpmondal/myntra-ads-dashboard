@@ -1,7 +1,8 @@
-// FILTER ENGINE
+// FILTER ENGINE - FIXED
 
-// Convert YYYYMMDD → JS Date
 function parseDate(dateStr) {
+
+    if (!dateStr) return null;
 
     const year = dateStr.substring(0, 4);
     const month = dateStr.substring(4, 6) - 1;
@@ -11,20 +12,21 @@ function parseDate(dateStr) {
 }
 
 
-// Get today's date (system)
-function getToday() {
-    return new Date();
-}
+// APPLY FILTER
+export function applyDateFilter(data, filterType) {
 
+    // 🔥 DEFAULT → NO FILTER
+    if (filterType === "all") {
+        return data;
+    }
 
-// Apply filter
-export function applyDateFilter(data, filterType, customRange = {}) {
-
-    const today = getToday();
+    const today = new Date();
 
     return data.filter(row => {
 
         const rowDate = parseDate(row["Date"]);
+
+        if (!rowDate) return false;
 
         // CURRENT MONTH
         if (filterType === "current") {
@@ -54,21 +56,7 @@ export function applyDateFilter(data, filterType, customRange = {}) {
             return rowDate >= last7 && rowDate <= today;
         }
 
-        // CUSTOM RANGE
-        if (filterType === "custom") {
-
-            const { start, end } = customRange;
-
-            if (!start || !end) return true;
-
-            const startDate = new Date(start);
-            const endDate = new Date(end);
-
-            return rowDate >= startDate && rowDate <= endDate;
-        }
-
         return true;
-
     });
 
 }
